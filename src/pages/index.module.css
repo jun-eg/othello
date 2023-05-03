@@ -8,6 +8,30 @@
   padding: 0 0.5rem;
 }
 
+.board {
+  width: 640px;
+  height: 640px;
+  background-color: green;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.cell {
+  width: 80px;
+  height: 80px;
+  border: solid 1px black;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.storn {
+  width: 70px;
+  height: 70px;
+  background-color: white;
+  border-radius: 50px;
+}
+
 .main {
   display: flex;
   flex: 1;
