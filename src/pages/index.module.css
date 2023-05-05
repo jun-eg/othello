@@ -32,6 +32,12 @@
   border-radius: 50px;
 }
 
+.signpost {
+  width: 80px;
+  height: 80px;
+  border: solid 2px yellow;
+}
+
 .main {
   display: flex;
   flex: 1;

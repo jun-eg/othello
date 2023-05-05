@@ -5,10 +5,10 @@ const Home = () => {
   const [board, setBoard] = useState([
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 2, 0, 0, 0],
-    [0, 0, 0, 2, 1, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 3, 0, 0, 0],
+    [0, 0, 0, 1, 2, 3, 0, 0],
+    [0, 0, 3, 2, 1, 0, 0, 0],
+    [0, 0, 0, 3, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
   ]);
@@ -17,6 +17,7 @@ const Home = () => {
   const clickCell = (x: number, y: number) => {
     console.log('クリック', x, y);
     const newBoard: number[][] = JSON.parse(JSON.stringify(board));
+
     console.log('newBoard', newBoard);
     const directions = [
       [0, -1],
@@ -29,14 +30,16 @@ const Home = () => {
       [-1, -1],
     ];
 
+    let return_check = 0;
     for (const n of directions) {
       if (
         board[y - n[1]] !== undefined &&
         board[x + n[0]] !== undefined &&
         board[y - n[1]][x + n[0]] === 3 - turnColor &&
-        board[y][x] === 0
+        board[y - n[1]][x - n[0]] !== 3 &&
+        board[y][x] === 3
       ) {
-        console.log('n位置', n);
+        console.log('n位置', x - n[0], y - n[1], board[y - n[1]][x - n[0]]);
         console.log('tc', turnColor);
 
         console.log('for修前', n[0], n[1]);
@@ -60,12 +63,16 @@ const Home = () => {
         let fc = 2;
 
         //臨時保存りスト
+
         const list: number[][] = [[n[0]], [n[1]]];
 
         // 返り駒在り配列選別
         for (let cf = 0; cf < 7; cf++) {
           if (board[y + ncn[1]] && board[y + ncn[1]][x + ncn[0]]) {
-            if (board[y + ncn[1]][x + ncn[0]] === 3 - turnColor) {
+            if (
+              board[y + ncn[1]][x + ncn[0]] === 3 - turnColor &&
+              board[y + ncn[1]][x + ncn[0]] !== 3
+            ) {
               ncn[1] = n[1] * fc;
 
               ncn[0] = n[0] * fc;
@@ -105,9 +112,9 @@ const Home = () => {
                 newBoard[y][x] = turnColor;
                 newBoard[y + ly][x + lx] = turnColor;
                 setTurnColor(3 - turnColor);
+                setBoard(newBoard);
+                return_check = 8;
               }
-
-              // setTurnColor(3 - turnColor);
 
               break;
             } else {
@@ -120,100 +127,70 @@ const Home = () => {
         }
       }
     }
+    if (return_check === 8) {
+      console.log('変更済み');
 
-    // setBoard(newBoard);
-
-    // 黒(1)座標表示(1次元配列)
-    const b_f_list: number[] = [];
-    for (let by = 0; by < newBoard.length; by++) {
-      for (let bx = 0; bx < newBoard[by].length; bx++) {
-        if (newBoard[by][bx] === 1) {
-          console.log(`黒(1)cell(${bx},${by})`);
-          b_f_list.push(bx);
-          b_f_list.push(by);
+      for (let i = 0; i < newBoard.length; i++) {
+        for (let j = 0; j < newBoard[i].length; j++) {
+          console.log('黄枠位置リセット');
+          if (newBoard[j][i] === 3) {
+            newBoard[j][i] = 0;
+          }
         }
       }
-    }
-
-    console.log('b_f_list', b_f_list);
-    //黒(1)座標2次元配列化
-
-    const b_list = [];
-
-    for (let i = 0; i < b_f_list.length; i += 2) {
-      const row = [b_f_list[i], b_f_list[i + 1]];
-      b_list.push(row);
-    }
-    ('');
-    console.log('b_list', b_list);
-
-    //白(2)座標表示(1次元配列)
-    const w_f_list = [];
-    // const wwww_list: number[][] = [];
-    for (let wy = 0; wy < newBoard.length; wy++) {
-      for (let wx = 0; wx < newBoard[wy].length; wx++) {
-        if (newBoard[wy][wx] === 2) {
-          console.log(`白(2)cell(${wx}, ${wy})`);
-          w_f_list.push(wx);
-          w_f_list.push(wy);
+      const zero_positions: number[][] = [];
+      for (let zy = 0; zy < newBoard.length; zy++) {
+        for (let zx = 0; zx < newBoard[zy].length; zx++) {
+          if (newBoard[zy][zx] === 0) {
+            // console.log('空(0)座標xy', zx, zy);
+            const f_zero_positions: number[] = [];
+            f_zero_positions.push(zx);
+            f_zero_positions.push(zy);
+            zero_positions.push(f_zero_positions);
+            //注意！zero_positionsは、x,yの順で格納されている
+          }
         }
       }
-    }
-    console.log('w_f_list', w_f_list);
+      console.log('0座標', zero_positions);
+      console.log('返り確認', newBoard[3][4]);
+      //0,8方向参照yellow_list作成、表示
+      const yellow_list: number[][] = [];
+      for (const one_zero_position of zero_positions) {
+        console.log('one_zero_position', one_zero_position);
+        for (const exposure of directions) {
+          for (let scale = 1; scale <= 7; scale++) {
+            const newY = exposure[1] * scale + one_zero_position[1];
+            const newX = exposure[0] * scale + one_zero_position[0];
 
-    //白(2)座標2次元配列化
-    const w_list = [];
-
-    for (let i = 0; i < w_f_list.length; i += 2) {
-      const row = [w_f_list[i], w_f_list[i + 1]];
-      w_list.push(row);
-    }
-    console.log('w_list', w_list);
-    console.log('tc', turnColor);
-    // setTurnColor(3 - turnColor);
-    //(白)黄枠directions的な
-    //空マス座標リスト
-
-    //黒ターンの時隣白
-    const b_yellow_list: number[][] = [];
-    if (turnColor === 2) {
-      for (const s_b of b_list) {
-        for (const n of directions) {
-          // console.log('s_w', s_w, 'n', n);
-
-          if (
-            newBoard[s_b[1] - n[1]] !== undefined &&
-            newBoard[s_b[0] - n[0]] !== undefined &&
-            newBoard[s_b[1] - n[1]][s_b[0] - n[0]] === turnColor
-          ) {
-            console.log('s_b', s_b, 'n', n);
-            //ｎのyの符号修正
-            if (n[1] !== 0) {
-              console.log('s_b,y符修必', n[1]);
-              n[1] = n[1] * -1;
-              console.log('s_b,y符修済', n[1]);
-            }
-            //3コマ目以降空マス探し
-            const cn: number[][] = [[n[0] * 2], [n[1] * 2]];
-
-            console.log('cn', cn);
-
-            const ncn: number[] = cn.flat();
-            console.log('2n', ncn);
-
-            let fc = 2;
-
-            //設置可能配列選別3マス目以降
-            for (let cf = 0; cf < 7; cf++) {
-              if (newBoard[s_b[1] + ncn[1]] && newBoard[s_b[1] + ncn[1]][s_b[0] + ncn[0]]) {
-                if (newBoard[s_b[1] + ncn[1]][s_b[0] + ncn[0]] === 3 - turnColor) {
-                  ncn[1] = n[1] * fc;
-                  ncn[0] = n[0] * fc;
-
-                  console.log('11111');
-                  fc++;
-
-                  console.log('3駒目以降2駒目と同色', newBoard[s_b[1] + ncn[1]][s_b[0] + ncn[0]]);
+            if (newBoard[newY + exposure[1]] !== undefined) {
+              if (newBoard[newX + exposure[0]] !== undefined) {
+                if (
+                  newBoard[one_zero_position[1] + exposure[1]][
+                    one_zero_position[0] + exposure[0]
+                  ] === 3
+                ) {
+                  break;
+                } else if (
+                  newBoard[one_zero_position[1] + exposure[1]][
+                    one_zero_position[0] + exposure[0]
+                  ] === 0
+                ) {
+                  break;
+                } else if (
+                  newBoard[one_zero_position[1] + exposure[1]][
+                    one_zero_position[0] + exposure[0]
+                  ] === turnColor
+                ) {
+                  if (newBoard[newY][newX] === 3 - turnColor) {
+                    console.log('有効0座標xy', one_zero_position);
+                    yellow_list.push(one_zero_position);
+                    for (const one_yellow of yellow_list) {
+                      newBoard[one_yellow[1]][one_yellow[0]] = 3;
+                    }
+                    setBoard(newBoard);
+                    // console.log('one_zero_position', one_zero_position);
+                    yellow_list.push(one_zero_position);
+                  }
                 }
               }
             }
@@ -221,9 +198,6 @@ const Home = () => {
         }
       }
     }
-    console.log('b_yellow_list', b_yellow_list);
-    // setTurnColor(3 - turnColor);
-    setBoard(newBoard);
   };
   return (
     <div className={styles.container}>
@@ -231,12 +205,14 @@ const Home = () => {
         {board.map((row, y) =>
           row.map((cell, x) => (
             <div className={styles.cell} key={`${x}-${y}`} onClick={() => clickCell(x, y)}>
-              {cell !== 0 && (
+              {cell !== 0 && cell !== 3 && (
                 <div
                   className={styles.storn}
                   style={{ background: cell === 1 ? '#000' : '#fff' }}
                 />
               )}
+
+              {cell === 3 && <div className={styles.signpost} key={`${x}-${y}`} />}
             </div>
           ))
         )}
