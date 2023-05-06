@@ -8,7 +8,7 @@ const Home = () => {
     [0, 0, 0, 0, 7, 0, 0, 0],
     [0, 0, 0, 1, 2, 7, 0, 0],
     [0, 0, 7, 2, 1, 0, 0, 0],
-    [0, 0, 0, 7, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
   ]);
@@ -31,7 +31,11 @@ const Home = () => {
     ];
 
     //8方向を参照して対駒座標、返し駒座標リストを返す関数
-    function look_around(assume_x: number, assume_y: number): [number[], number[][]] {
+    function look_around(
+      assume_x: number,
+      assume_y: number,
+      assume_t: number
+    ): [number[], number[][]] {
       //確定返し駒リスト※x,yの順番で格納されてる
       let return_piece_list: number[][] = [];
 
@@ -46,7 +50,7 @@ const Home = () => {
         if (
           board[y + course[1]] !== undefined &&
           board[x + course[0]] !== undefined &&
-          board[y + course[1]][x + course[0]] === 3 - turnColor
+          board[y + course[1]][x + course[0]] === 3 - assume_t
         ) {
           for (let next_squares = 2; next_squares <= 7; next_squares++) {
             const x_next_squares = course[0] * next_squares + assume_x;
@@ -67,7 +71,7 @@ const Home = () => {
             if (
               board[y + course[1]] !== undefined &&
               board[x + course[0]] !== undefined &&
-              board[y_next_squares][x_next_squares] === turnColor
+              board[y_next_squares][x_next_squares] === assume_t
             ) {
               //異色の場合、1つ隣のマスを臨時返し駒リストへ格納
               temporary_return_piece_list.push([assume_x + course[0], assume_y + course[1]]);
@@ -89,7 +93,7 @@ const Home = () => {
 
     //駒設置＆裏返し処理
     const check_turncolor = 10;
-    const [click, return_list] = look_around(x, y);
+    const [click, return_list] = look_around(x, y, turnColor);
 
     if (
       board[click[1]] !== undefined &&
@@ -134,7 +138,11 @@ const Home = () => {
 
     for (const one_zero_positions of zero_positions) {
       console.log('one_zer', one_zero_positions);
-      const [valid_zero_position] = look_around(one_zero_positions[0], one_zero_positions[1]);
+      const [valid_zero_position] = look_around(
+        one_zero_positions[0],
+        one_zero_positions[1],
+        3 - turnColor
+      );
 
       if (
         newBoard[valid_zero_position[1]] !== undefined &&
