@@ -5,10 +5,10 @@ const Home = () => {
   const [board, setBoard] = useState([
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 2, 0, 0, 0],
-    [0, 0, 0, 2, 1, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 7, 0, 0, 0],
+    [0, 0, 0, 1, 2, 7, 0, 0],
+    [0, 0, 7, 2, 1, 0, 0, 0],
+    [0, 0, 0, 7, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
   ]);
@@ -51,7 +51,7 @@ const Home = () => {
           board[x + course[0]] !== undefined &&
           board[y + course[1]][x + course[0]] === 3 - turnColor
         ) {
-          console.log('隣異色０座標', assume_x, assume_y, course[0], course[1]);
+          // console.log('隣異色０座標', assume_x, assume_y, course[0], course[1]);
           for (let next_squares = 2; next_squares <= 7; next_squares++) {
             const x_next_squares = course[0] * next_squares + assume_x;
             const y_next_squares = course[1] * next_squares + assume_y;
@@ -73,7 +73,7 @@ const Home = () => {
               board[x_next_squares] !== undefined &&
               board[y_next_squares][x_next_squares] === turnColor
             ) {
-              //異色の場合、1つ隣のマスを臨時返し駒リストへ格納
+              //対駒がある場合、1つ隣のマスを臨時返し駒リストへ格納
               temporary_return_piece_list.push([assume_x + course[0], assume_y + course[1]]);
 
               //対駒がある場合、臨時返し駒リストの座標をリストへ
@@ -93,14 +93,12 @@ const Home = () => {
       return [valid_click_state, return_piece_list];
     }
 
-    //turncolorが変わったら行う処理
     //過去の黄色枠座標消去
-    if (newTurnColor === 3 - turnColor) {
-      for (let i = 0; i < newBoard.length; i++) {
-        for (let j = 0; j < newBoard[i].length; j++) {
-          if (newBoard[j][i] === 7) {
-            newBoard[j][i] = 0;
-          }
+
+    for (let i = 0; i < newBoard.length; i++) {
+      for (let j = 0; j < newBoard[i].length; j++) {
+        if (newBoard[j][i] === 7) {
+          newBoard[j][i] = 0;
         }
       }
     }
@@ -111,7 +109,7 @@ const Home = () => {
     if (
       board[click[1]] !== undefined &&
       board[click[0]] !== undefined &&
-      board[click[1]][click[0]] === 0
+      board[click[1]][click[0]] === 7
     ) {
       newBoard[click[1]][click[0]] = turnColor;
 
@@ -139,10 +137,41 @@ const Home = () => {
       }
     }
 
+    //0,8方向参照yellow_list作成、表示
     for (const one_zero_position of zero_positions) {
-      const [valid_one_zero_position] = look_around(one_zero_position[0], one_zero_position[1]);
+      for (const course of directions) {
+        if (
+          newBoard[one_zero_position[1] + course[1]] !== undefined &&
+          newBoard[one_zero_position[0] + course[0]] !== undefined &&
+          newBoard[one_zero_position[1] + course[1]][one_zero_position[0] + course[0]] === turnColor
+        ) {
+          // console.log('隣異色ゼロ座標', one_zero_position[0], one_zero_position[1]);
+          for (let next_squares = 2; next_squares <= 7; next_squares++) {
+            const x_next_squares = course[0] * next_squares + one_zero_position[0];
+            const y_next_squares = course[1] * next_squares + one_zero_position[1];
 
-      console.log('valid_one_zero_position', valid_one_zero_position);
+            if (
+              //対駒の前に0が来たらbreak
+              newBoard[y_next_squares] !== undefined &&
+              newBoard[x_next_squares] !== undefined &&
+              newBoard[y_next_squares][x_next_squares] === 0
+            ) {
+              break;
+            }
+
+            if (
+              newBoard[y_next_squares] !== undefined &&
+              newBoard[x_next_squares] !== undefined &&
+              newBoard[y_next_squares][x_next_squares] === 3 - turnColor
+            ) {
+              // console.log('有効ゼロ座標', one_zero_position[0], one_zero_position[1]);
+              newBoard[one_zero_position[1]][one_zero_position[0]] = 7;
+
+              break;
+            }
+          }
+        }
+      }
     }
   };
   return (
@@ -151,14 +180,14 @@ const Home = () => {
         {board.map((row, y) =>
           row.map((cell, x) => (
             <div className={styles.cell} key={`${x}-${y}`} onClick={() => clickCell(x, y)}>
-              {cell !== 0 && cell !== 3 && (
+              {cell !== 0 && cell !== 7 && (
                 <div
                   className={styles.storn}
                   style={{ background: cell === 1 ? '#000' : '#fff' }}
                 />
               )}
 
-              {cell === 3 && <div className={styles.signpost} key={`${x}-${y}`} />}
+              {cell === 7 && <div className={styles.signpost} key={`${x}-${y}`} />}
             </div>
           ))
         )}
