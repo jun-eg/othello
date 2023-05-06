@@ -5,10 +5,10 @@ const Home = () => {
   const [board, setBoard] = useState([
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 2, 0, 0, 0],
-    [0, 0, 0, 2, 1, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 7, 0, 0, 0],
+    [0, 0, 0, 1, 2, 7, 0, 0],
+    [0, 0, 7, 2, 1, 0, 0, 0],
+    [0, 0, 0, 7, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
   ]);
@@ -87,23 +87,63 @@ const Home = () => {
       return [valid_click_state, return_piece_list];
     }
 
+    //駒設置＆裏返し処理
+    const check_turncolor = 10;
     const [click, return_list] = look_around(x, y);
 
-    // console.log('click', click === []);
-    console.log('return_list', return_list, return_list[0], return_list[1]);
     if (
       board[click[1]] !== undefined &&
       board[click[0]] !== undefined &&
-      board[click[1]][click[0]] === 0
+      board[click[1]][click[0]] === 7
     ) {
       newBoard[click[1]][click[0]] = turnColor;
 
       for (const one_return_list of return_list) {
         newBoard[one_return_list[1]][one_return_list[0]] = turnColor;
       }
+      console.log(turnColor);
       setTurnColor(3 - turnColor);
-      setBoard(newBoard);
+
+      console.log(turnColor);
     }
+
+    //過去の黄色枠座標消去
+    if (check_turncolor === 10) {
+      for (let i = 0; i < newBoard.length; i++) {
+        for (let j = 0; j < newBoard[i].length; j++) {
+          if (newBoard[j][i] === 7) {
+            newBoard[j][i] = 0;
+          }
+        }
+      }
+    }
+
+    //ゼロ座標全検索
+    const zero_positions: number[][] = [];
+    for (let zy = 0; zy < newBoard.length; zy++) {
+      for (let zx = 0; zx < newBoard[zy].length; zx++) {
+        if (newBoard[zy][zx] === 0) {
+          const f_zero_positions: number[] = [];
+          f_zero_positions.push(zx);
+          f_zero_positions.push(zy);
+          zero_positions.push(f_zero_positions);
+          //注意！zero_positionsは、x,yの順で格納されている
+        }
+      }
+    }
+
+    for (const one_zero_positions of zero_positions) {
+      console.log('one_zer', one_zero_positions);
+      const [valid_zero_position] = look_around(one_zero_positions[0], one_zero_positions[1]);
+
+      if (
+        newBoard[valid_zero_position[1]] !== undefined &&
+        newBoard[valid_zero_position[0]] !== undefined
+      ) {
+        newBoard[valid_zero_position[1]][valid_zero_position[0]] = 7;
+      }
+    }
+    setBoard(newBoard);
   };
   return (
     <div className={styles.container}>
@@ -111,14 +151,14 @@ const Home = () => {
         {board.map((row, y) =>
           row.map((cell, x) => (
             <div className={styles.cell} key={`${x}-${y}`} onClick={() => clickCell(x, y)}>
-              {cell !== 0 && cell !== 3 && (
+              {cell !== 0 && cell !== 7 && (
                 <div
                   className={styles.storn}
                   style={{ background: cell === 1 ? '#000' : '#fff' }}
                 />
               )}
 
-              {cell === 3 && <div className={styles.signpost} key={`${x}-${y}`} />}
+              {cell === 7 && <div className={styles.signpost} key={`${x}-${y}`} />}
             </div>
           ))
         )}
