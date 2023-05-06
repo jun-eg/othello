@@ -6,12 +6,13 @@
   height: 100vh;
   min-height: 100vh;
   padding: 0 0.5rem;
+  background-color: rgb(199 171 171);
 }
 
 .board {
   width: 640px;
   height: 640px;
-  background-color: green;
+  background-color: rgb(67 150 67);
   display: flex;
   flex-wrap: wrap;
 }
@@ -19,7 +20,7 @@
 .cell {
   width: 80px;
   height: 80px;
-  border: solid 1px black;
+  border: solid 1px rgb(89 88 88);
   justify-content: center;
   align-items: center;
   display: flex;
@@ -36,6 +37,17 @@
   width: 80px;
   height: 80px;
   border: solid 2px yellow;
+}
+
+.headline {
+  flex-grow: 0;
+  font-size: 50px;
+}
+
+.game_table {
+  font-size: 20px;
+  flex-grow: 0;
+  font-family: cursive;
 }
 
 .main {

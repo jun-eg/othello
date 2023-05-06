@@ -15,11 +15,18 @@ const Home = () => {
 
   const [turnColor, setTurnColor] = useState(1);
   let newTurnColor = JSON.parse(JSON.stringify(turnColor));
+
+  const [white_count, setwhite_count] = useState(2);
+  let newwhite_count = JSON.parse(JSON.stringify(white_count));
+
+  const [black_count, setblack_count] = useState(2);
+  let newblack_count = JSON.parse(JSON.stringify(black_count));
+
   const clickCell = (x: number, y: number) => {
     console.log('クリック', x, y);
     const newBoard: number[][] = JSON.parse(JSON.stringify(board));
 
-    console.log('newBoard', newBoard);
+    // console.log('newBoard', newBoard);
     const directions = [
       [0, -1],
       [1, -1],
@@ -31,8 +38,8 @@ const Home = () => {
       [-1, -1],
     ];
 
-    console.log('turncolor', turnColor);
-    console.log('newturncolor', newTurnColor);
+    // console.log('turncolor', turnColor);
+    // console.log('newturncolor', newTurnColor);
     //8方向を参照して対駒座標、返し駒座標リストを返す関数
     function look_around(assume_x: number, assume_y: number): [number[], number[][]] {
       //確定返し駒リスト※x,yの順番で格納されてる
@@ -93,6 +100,18 @@ const Home = () => {
       return [valid_click_state, return_piece_list];
     }
 
+    function specified_digit_count(search_digit: number): number[] {
+      let count_digit = 0;
+      for (let i = 0; i < newBoard.length; i++) {
+        for (let j = 0; j < newBoard[i].length; j++) {
+          if (newBoard[j][i] === search_digit) {
+            count_digit++;
+          }
+        }
+      }
+      return [count_digit];
+    }
+
     //過去の黄色枠座標消去
 
     for (let i = 0; i < newBoard.length; i++) {
@@ -105,7 +124,7 @@ const Home = () => {
 
     //有効クリック駒設置、駒返し処理
     const [click, return_list] = look_around(x, y);
-    console.log('return_list', return_list, return_list[0], return_list[1]);
+    // console.log('return_list', return_list, return_list[0], return_list[1]);
     if (
       board[click[1]] !== undefined &&
       board[click[0]] !== undefined &&
@@ -129,23 +148,24 @@ const Home = () => {
           const f_zero_positions: number[] = [];
           f_zero_positions.push(zx);
           f_zero_positions.push(zy);
-          console.log('f_zero_position', f_zero_positions);
+          // console.log('f_zero_position', f_zero_positions);
           zero_positions.push(f_zero_positions);
-          console.log('zero_position', zero_positions);
+          // console.log('zero_position', zero_positions);
           //注意！zero_positionsは、x,yの順で格納されている
         }
       }
     }
 
-    //0,8方向参照yellow_list作成、表示
+    //0座標から8方向参照、黄色枠位置割り出し処理
     for (const one_zero_position of zero_positions) {
       for (const course of directions) {
         if (
+          //0座標の隣が ※異色 の場合処理を行う
           newBoard[one_zero_position[1] + course[1]] !== undefined &&
           newBoard[one_zero_position[0] + course[0]] !== undefined &&
           newBoard[one_zero_position[1] + course[1]][one_zero_position[0] + course[0]] === turnColor
         ) {
-          // console.log('隣異色ゼロ座標', one_zero_position[0], one_zero_position[1]);
+          //2マス目以降対駒探し
           for (let next_squares = 2; next_squares <= 7; next_squares++) {
             const x_next_squares = course[0] * next_squares + one_zero_position[0];
             const y_next_squares = course[1] * next_squares + one_zero_position[1];
@@ -160,6 +180,7 @@ const Home = () => {
             }
 
             if (
+              //対駒在りの場合、0座標を'7'に変更
               newBoard[y_next_squares] !== undefined &&
               newBoard[x_next_squares] !== undefined &&
               newBoard[y_next_squares][x_next_squares] === 3 - turnColor
@@ -173,9 +194,23 @@ const Home = () => {
         }
       }
     }
+
+    const [temporary_white_count] = specified_digit_count(2);
+    const [temporary_black_count] = specified_digit_count(1);
+    newblack_count = temporary_black_count;
+    newwhite_count = temporary_white_count;
+    setblack_count(newblack_count);
+    setwhite_count(newwhite_count);
   };
   return (
     <div className={styles.container}>
+      <div className={styles.game_table}>
+        <p>{turnColor === 1 ? '黒' : '白'}のターンです。</p>
+        <p>点数</p>
+        <p>白 {white_count}</p>
+        <p>黒 {black_count}</p>
+      </div>
+
       <div className={styles.board}>
         {board.map((row, y) =>
           row.map((cell, x) => (
@@ -183,7 +218,7 @@ const Home = () => {
               {cell !== 0 && cell !== 7 && (
                 <div
                   className={styles.storn}
-                  style={{ background: cell === 1 ? '#000' : '#fff' }}
+                  style={{ background: cell === 1 ? '#131212' : '#d5d2d2' }}
                 />
               )}
 
