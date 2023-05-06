@@ -5,15 +5,16 @@ const Home = () => {
   const [board, setBoard] = useState([
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 7, 0, 0, 0],
-    [0, 0, 0, 1, 2, 7, 0, 0],
-    [0, 0, 7, 2, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 2, 0, 0, 0],
+    [0, 0, 0, 2, 1, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
   ]);
 
   const [turnColor, setTurnColor] = useState(1);
+  let newTurnColor = JSON.parse(JSON.stringify(turnColor));
   const clickCell = (x: number, y: number) => {
     console.log('クリック', x, y);
     const newBoard: number[][] = JSON.parse(JSON.stringify(board));
@@ -30,12 +31,10 @@ const Home = () => {
       [-1, -1],
     ];
 
+    console.log('turncolor', turnColor);
+    console.log('newturncolor', newTurnColor);
     //8方向を参照して対駒座標、返し駒座標リストを返す関数
-    function look_around(
-      assume_x: number,
-      assume_y: number,
-      assume_t: number
-    ): [number[], number[][]] {
+    function look_around(assume_x: number, assume_y: number): [number[], number[][]] {
       //確定返し駒リスト※x,yの順番で格納されてる
       let return_piece_list: number[][] = [];
 
@@ -50,8 +49,9 @@ const Home = () => {
         if (
           board[y + course[1]] !== undefined &&
           board[x + course[0]] !== undefined &&
-          board[y + course[1]][x + course[0]] === 3 - assume_t
+          board[y + course[1]][x + course[0]] === 3 - turnColor
         ) {
+          console.log('隣異色０座標', assume_x, assume_y, course[0], course[1]);
           for (let next_squares = 2; next_squares <= 7; next_squares++) {
             const x_next_squares = course[0] * next_squares + assume_x;
             const y_next_squares = course[1] * next_squares + assume_y;
@@ -69,9 +69,9 @@ const Home = () => {
             }
 
             if (
-              board[y + course[1]] !== undefined &&
-              board[x + course[0]] !== undefined &&
-              board[y_next_squares][x_next_squares] === assume_t
+              board[y_next_squares] !== undefined &&
+              board[x_next_squares] !== undefined &&
+              board[y_next_squares][x_next_squares] === turnColor
             ) {
               //異色の場合、1つ隣のマスを臨時返し駒リストへ格納
               temporary_return_piece_list.push([assume_x + course[0], assume_y + course[1]]);
@@ -82,6 +82,8 @@ const Home = () => {
               //対駒が認識された場合、クリック座標を格納※x,yの順で格納
               valid_click_state = [assume_x, assume_y];
 
+              newTurnColor = 3 - turnColor;
+
               break;
             }
           }
@@ -91,28 +93,9 @@ const Home = () => {
       return [valid_click_state, return_piece_list];
     }
 
-    //駒設置＆裏返し処理
-    const check_turncolor = 10;
-    const [click, return_list] = look_around(x, y, turnColor);
-
-    if (
-      board[click[1]] !== undefined &&
-      board[click[0]] !== undefined &&
-      board[click[1]][click[0]] === 7
-    ) {
-      newBoard[click[1]][click[0]] = turnColor;
-
-      for (const one_return_list of return_list) {
-        newBoard[one_return_list[1]][one_return_list[0]] = turnColor;
-      }
-      console.log(turnColor);
-      setTurnColor(3 - turnColor);
-
-      console.log(turnColor);
-    }
-
+    //turncolorが変わったら行う処理
     //過去の黄色枠座標消去
-    if (check_turncolor === 10) {
+    if (newTurnColor === 3 - turnColor) {
       for (let i = 0; i < newBoard.length; i++) {
         for (let j = 0; j < newBoard[i].length; j++) {
           if (newBoard[j][i] === 7) {
@@ -120,6 +103,24 @@ const Home = () => {
           }
         }
       }
+    }
+
+    //有効クリック駒設置、駒返し処理
+    const [click, return_list] = look_around(x, y);
+    console.log('return_list', return_list, return_list[0], return_list[1]);
+    if (
+      board[click[1]] !== undefined &&
+      board[click[0]] !== undefined &&
+      board[click[1]][click[0]] === 0
+    ) {
+      newBoard[click[1]][click[0]] = turnColor;
+
+      for (const one_return_list of return_list) {
+        newBoard[one_return_list[1]][one_return_list[0]] = turnColor;
+      }
+
+      setBoard(newBoard);
+      setTurnColor(newTurnColor);
     }
 
     //ゼロ座標全検索
@@ -130,28 +131,19 @@ const Home = () => {
           const f_zero_positions: number[] = [];
           f_zero_positions.push(zx);
           f_zero_positions.push(zy);
+          console.log('f_zero_position', f_zero_positions);
           zero_positions.push(f_zero_positions);
+          console.log('zero_position', zero_positions);
           //注意！zero_positionsは、x,yの順で格納されている
         }
       }
     }
 
-    for (const one_zero_positions of zero_positions) {
-      console.log('one_zer', one_zero_positions);
-      const [valid_zero_position] = look_around(
-        one_zero_positions[0],
-        one_zero_positions[1],
-        3 - turnColor
-      );
+    for (const one_zero_position of zero_positions) {
+      const [valid_one_zero_position] = look_around(one_zero_position[0], one_zero_position[1]);
 
-      if (
-        newBoard[valid_zero_position[1]] !== undefined &&
-        newBoard[valid_zero_position[0]] !== undefined
-      ) {
-        newBoard[valid_zero_position[1]][valid_zero_position[0]] = 7;
-      }
+      console.log('valid_one_zero_position', valid_one_zero_position);
     }
-    setBoard(newBoard);
   };
   return (
     <div className={styles.container}>
@@ -159,14 +151,14 @@ const Home = () => {
         {board.map((row, y) =>
           row.map((cell, x) => (
             <div className={styles.cell} key={`${x}-${y}`} onClick={() => clickCell(x, y)}>
-              {cell !== 0 && cell !== 7 && (
+              {cell !== 0 && cell !== 3 && (
                 <div
                   className={styles.storn}
                   style={{ background: cell === 1 ? '#000' : '#fff' }}
                 />
               )}
 
-              {cell === 7 && <div className={styles.signpost} key={`${x}-${y}`} />}
+              {cell === 3 && <div className={styles.signpost} key={`${x}-${y}`} />}
             </div>
           ))
         )}
