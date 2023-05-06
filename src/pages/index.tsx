@@ -5,10 +5,10 @@ const Home = () => {
   const [board, setBoard] = useState([
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 3, 0, 0, 0],
-    [0, 0, 0, 1, 2, 3, 0, 0],
-    [0, 0, 3, 2, 1, 0, 0, 0],
-    [0, 0, 0, 3, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 2, 0, 0, 0],
+    [0, 0, 0, 2, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
   ]);
@@ -92,9 +92,8 @@ const Home = () => {
     // console.log('click', click === []);
     console.log('return_list', return_list, return_list[0], return_list[1]);
     if (
-      (board[click[0]] !== undefined &&
-        board[click[1]] !== undefined &&
-        board[click[1]][click[0]] === 3) ||
+      board[click[1]] !== undefined &&
+      board[click[0]] !== undefined &&
       board[click[1]][click[0]] === 0
     ) {
       newBoard[click[1]][click[0]] = turnColor;
