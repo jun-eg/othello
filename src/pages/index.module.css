@@ -33,6 +33,15 @@
   border-radius: 50px;
 }
 
+.pass_button {
+  width: 75px;
+  height: 75px;
+  border-radius: 40px;
+  background-color: #6f7bb0;
+  text-align: center;
+  font-size: 22px;
+}
+
 .signpost {
   width: 80px;
   height: 80px;

@@ -22,6 +22,12 @@ const Home = () => {
   const [black_count, setblack_count] = useState(2);
   let newblack_count = JSON.parse(JSON.stringify(black_count));
 
+  const [black_pass_count, setblack_pass_count] = useState(0);
+  const newblack_pass_count = JSON.parse(JSON.stringify(black_pass_count));
+
+  const [white_pass_count, setwhite_pass_count] = useState(0);
+  const newwhite_pass_count = JSON.parse(JSON.stringify(white_pass_count));
+
   const clickCell = (x: number, y: number) => {
     console.log('クリック', x, y);
     const newBoard: number[][] = JSON.parse(JSON.stringify(board));
@@ -210,7 +216,9 @@ const Home = () => {
         <p>白 {white_count}</p>
         <p>黒 {black_count}</p>
       </div>
-
+      <div className={styles.pass_button} onClick={() => clickCell(100, 100)}>
+        <p>pass</p>
+      </div>
       <div className={styles.board}>
         {board.map((row, y) =>
           row.map((cell, x) => (
