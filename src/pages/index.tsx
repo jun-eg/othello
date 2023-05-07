@@ -162,6 +162,11 @@ const Home = () => {
       }
     }
 
+    if (x === 100 && y === 100) {
+      newTurnColor = 3 - turnColor;
+      setTurnColor(newTurnColor);
+    }
+
     //0座標から8方向参照、黄色枠位置割り出し処理
     for (const one_zero_position of zero_positions) {
       for (const course of directions) {
@@ -169,7 +174,8 @@ const Home = () => {
           //0座標の隣が ※異色 の場合処理を行う
           newBoard[one_zero_position[1] + course[1]] !== undefined &&
           newBoard[one_zero_position[0] + course[0]] !== undefined &&
-          newBoard[one_zero_position[1] + course[1]][one_zero_position[0] + course[0]] === turnColor
+          newBoard[one_zero_position[1] + course[1]][one_zero_position[0] + course[0]] ===
+            3 - newTurnColor
         ) {
           //2マス目以降対駒探し
           for (let next_squares = 2; next_squares <= 7; next_squares++) {
@@ -189,10 +195,11 @@ const Home = () => {
               //対駒在りの場合、0座標を'7'に変更
               newBoard[y_next_squares] !== undefined &&
               newBoard[x_next_squares] !== undefined &&
-              newBoard[y_next_squares][x_next_squares] === 3 - turnColor
+              newBoard[y_next_squares][x_next_squares] === newTurnColor
             ) {
-              // console.log('有効ゼロ座標', one_zero_position[0], one_zero_position[1]);
+              console.log('有効ゼロ座標', one_zero_position[0], one_zero_position[1]);
               newBoard[one_zero_position[1]][one_zero_position[0]] = 7;
+              setBoard(newBoard);
 
               break;
             }
@@ -216,7 +223,7 @@ const Home = () => {
         <p>白 {white_count}</p>
         <p>黒 {black_count}</p>
       </div>
-      <div className={styles.pass_button} onClick={() => clickCell(100, 100)}>
+      <div className={styles.pass_button} key={2} onClick={() => clickCell(100, 100)}>
         <p>pass</p>
       </div>
       <div className={styles.board}>
