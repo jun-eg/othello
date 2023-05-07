@@ -23,7 +23,7 @@ const Home = () => {
   let newblack_count = JSON.parse(JSON.stringify(black_count));
 
   const [black_pass_count, setblack_pass_count] = useState(0);
-  const newblack_pass_count = JSON.parse(JSON.stringify(black_pass_count));
+  let newblack_pass_count = JSON.parse(JSON.stringify(black_pass_count));
 
   const [white_pass_count, setwhite_pass_count] = useState(0);
   const newwhite_pass_count = JSON.parse(JSON.stringify(white_pass_count));
@@ -142,7 +142,6 @@ const Home = () => {
         newBoard[one_return_list[1]][one_return_list[0]] = turnColor;
       }
 
-      setBoard(newBoard);
       setTurnColor(newTurnColor);
     }
 
@@ -162,9 +161,17 @@ const Home = () => {
       }
     }
 
+    //pass機能
     if (x === 100 && y === 100) {
+      if (turnColor === 1) {
+        newblack_pass_count++;
+      } else if (turnColor === 2) {
+        newblack_pass_count++;
+      }
       newTurnColor = 3 - turnColor;
       setTurnColor(newTurnColor);
+      setblack_pass_count(black_count);
+      setwhite_pass_count(white_count);
     }
 
     //0座標から8方向参照、黄色枠位置割り出し処理
@@ -220,10 +227,22 @@ const Home = () => {
       <div className={styles.game_table}>
         <p>{turnColor === 1 ? '黒' : '白'}のターンです。</p>
         <p>点数</p>
-        <p>白 {white_count}</p>
+        <p>白 {white_pass_count}</p>
         <p>黒 {black_count}</p>
+        <div className={styles.caveat}>
+          {white_pass_count === 1 && (
+            <p>警告!pass2回で負け判定になります。只今のpass{white_pass_count}です。</p>
+          )}
+        </div>
+        <div className={styles.caveat}>
+          {black_pass_count === 1 && (
+            <p>警告!pass2回で負け判定になります。只今のpass{black_pass_count}です。</p>
+          )}
+        </div>
+        <div className={styles.caveat}>{white_pass_count === 2 && <p>警告!白の負けです。</p>}</div>
+        <div className={styles.caveat}>{black_pass_count === 2 && <p>警告！黒の負けです。</p>}</div>
       </div>
-      <div className={styles.pass_button} key={2} onClick={() => clickCell(100, 100)}>
+      <div className={styles.pass_button} onClick={() => clickCell(100, 100)}>
         <p>pass</p>
       </div>
       <div className={styles.board}>
