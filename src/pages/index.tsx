@@ -26,7 +26,7 @@ const Home = () => {
   let newblack_pass_count = JSON.parse(JSON.stringify(black_pass_count));
 
   const [white_pass_count, setwhite_pass_count] = useState(0);
-  const newwhite_pass_count = JSON.parse(JSON.stringify(white_pass_count));
+  let newwhite_pass_count = JSON.parse(JSON.stringify(white_pass_count));
 
   const clickCell = (x: number, y: number) => {
     console.log('クリック', x, y);
@@ -106,6 +106,16 @@ const Home = () => {
       return [valid_click_state, return_piece_list];
     }
 
+    //過去の黄色枠座標消去
+
+    for (let i = 0; i < newBoard.length; i++) {
+      for (let j = 0; j < newBoard[i].length; j++) {
+        if (newBoard[j][i] === 7) {
+          newBoard[j][i] = 0;
+        }
+      }
+    }
+
     function specified_digit_count(search_digit: number): number[] {
       let count_digit = 0;
       for (let i = 0; i < newBoard.length; i++) {
@@ -116,16 +126,6 @@ const Home = () => {
         }
       }
       return [count_digit];
-    }
-
-    //過去の黄色枠座標消去
-
-    for (let i = 0; i < newBoard.length; i++) {
-      for (let j = 0; j < newBoard[i].length; j++) {
-        if (newBoard[j][i] === 7) {
-          newBoard[j][i] = 0;
-        }
-      }
     }
 
     //有効クリック駒設置、駒返し処理
@@ -164,14 +164,14 @@ const Home = () => {
     //pass機能
     if (x === 100 && y === 100) {
       if (turnColor === 1) {
-        newblack_pass_count++;
+        newblack_pass_count = newblack_pass_count + 1;
       } else if (turnColor === 2) {
-        newblack_pass_count++;
+        newwhite_pass_count = newwhite_pass_count + 1;
       }
       newTurnColor = 3 - turnColor;
       setTurnColor(newTurnColor);
-      setblack_pass_count(black_count);
-      setwhite_pass_count(white_count);
+      setblack_pass_count(newblack_pass_count);
+      setwhite_pass_count(newwhite_pass_count);
     }
 
     //0座標から8方向参照、黄色枠位置割り出し処理
@@ -227,16 +227,16 @@ const Home = () => {
       <div className={styles.game_table}>
         <p>{turnColor === 1 ? '黒' : '白'}のターンです。</p>
         <p>点数</p>
-        <p>白 {white_pass_count}</p>
+        <p>白 {white_count}</p>
         <p>黒 {black_count}</p>
         <div className={styles.caveat}>
           {white_pass_count === 1 && (
-            <p>警告!pass2回で負け判定になります。只今のpass{white_pass_count}です。</p>
+            <p>警告!pass2回で負け判定になります。只今の白pass{white_pass_count}です。</p>
           )}
         </div>
         <div className={styles.caveat}>
           {black_pass_count === 1 && (
-            <p>警告!pass2回で負け判定になります。只今のpass{black_pass_count}です。</p>
+            <p>警告!pass2回で負け判定になります。只今の黒pass{black_pass_count}です。</p>
           )}
         </div>
         <div className={styles.caveat}>{white_pass_count === 2 && <p>警告!白の負けです。</p>}</div>
