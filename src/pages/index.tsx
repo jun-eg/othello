@@ -47,11 +47,11 @@ const Home = () => {
     // console.log('turncolor', turnColor);
     // console.log('newturncolor', newTurnColor);
     //8方向を参照して対駒座標、返し駒座標リストを返す関数
-    function look_around(assume_x: number, assume_y: number): [number[], number[][]] {
+    function look_around(x: number, y: number): [number[], number[][]] {
       //確定返し駒リスト※x,yの順番で格納されてる
       let return_piece_list: number[][] = [];
 
-      //クリック座標
+      //クリック座標F
       let valid_click_state: number[] = [];
 
       for (const course of directions) {
@@ -64,10 +64,10 @@ const Home = () => {
           board[x + course[0]] !== undefined &&
           board[y + course[1]][x + course[0]] === 3 - turnColor
         ) {
-          // console.log('隣異色０座標', assume_x, assume_y, course[0], course[1]);
+          // console.log('隣異色０座標', x, y, course[0], course[1]);
           for (let next_squares = 2; next_squares <= 7; next_squares++) {
-            const x_next_squares = course[0] * next_squares + assume_x;
-            const y_next_squares = course[1] * next_squares + assume_y;
+            const x_next_squares = course[0] * next_squares + x;
+            const y_next_squares = course[1] * next_squares + y;
 
             //臨時返し駒リストへ格納※pushの順番注意
             temporary_return_piece_list.push([x_next_squares, y_next_squares]);
@@ -87,13 +87,13 @@ const Home = () => {
               board[y_next_squares][x_next_squares] === turnColor
             ) {
               //対駒がある場合、1つ隣のマスを臨時返し駒リストへ格納
-              temporary_return_piece_list.push([assume_x + course[0], assume_y + course[1]]);
+              temporary_return_piece_list.push([x + course[0], y + course[1]]);
 
               //対駒がある場合、臨時返し駒リストの座標をリストへ
               return_piece_list = return_piece_list.concat(temporary_return_piece_list);
 
               //対駒が認識された場合、クリック座標を格納※x,yの順で格納
-              valid_click_state = [assume_x, assume_y];
+              valid_click_state = [x, y];
 
               newTurnColor = 3 - turnColor;
 
@@ -179,10 +179,9 @@ const Home = () => {
       for (const course of directions) {
         if (
           //0座標の隣が ※異色 の場合処理を行う
-          newBoard[one_zero_position[1] + course[1]] !== undefined &&
-          newBoard[one_zero_position[0] + course[0]] !== undefined &&
-          newBoard[one_zero_position[1] + course[1]][one_zero_position[0] + course[0]] ===
-            3 - newTurnColor
+
+          newBoard[one_zero_position[1] + course[1]]?.[one_zero_position[0] + course[0]] ===
+          3 - newTurnColor
         ) {
           //2マス目以降対駒探し
           for (let next_squares = 2; next_squares <= 7; next_squares++) {
