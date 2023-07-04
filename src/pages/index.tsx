@@ -5,13 +5,26 @@ const Home = () => {
   const [board, setBoard] = useState([
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 7, 0, 0, 0],
-    [0, 0, 0, 1, 2, 7, 0, 0],
-    [0, 0, 7, 2, 1, 0, 0, 0],
-    [0, 0, 0, 7, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 1, 2, 0, 0, 0],
+    [0, 0, 0, 2, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
   ]);
+
+  const newBoard: number[][] = JSON.parse(JSON.stringify(board));
+
+  const directions = [
+    [0, -1],
+    [1, -1],
+    [1, 0],
+    [1, 1],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [-1, -1],
+  ];
 
   const [turnColor, setTurnColor] = useState(1);
   let newTurnColor = JSON.parse(JSON.stringify(turnColor));
@@ -28,21 +41,66 @@ const Home = () => {
   const [white_pass_count, setwhite_pass_count] = useState(0);
   let newwhite_pass_count = JSON.parse(JSON.stringify(white_pass_count));
 
+  //0座標取得(候補地設置に使用)
+  const get_zero_positions = () => {
+    const zero_positions: number[][] = [];
+    board.map((y, rowIndex_y) => {
+      y.map((x, colIndex_x) => {
+        if (x === 0) {
+          zero_positions.push([rowIndex_y, colIndex_x]);
+        }
+      });
+    });
+    return zero_positions;
+  };
+
+  //過去の黄色枠座標消去
+
+  for (let i = 0; i < newBoard.length; i++) {
+    for (let j = 0; j < newBoard[i].length; j++) {
+      if (board[j][i] === 7) {
+        board[j][i] = 0;
+      }
+    }
+  }
+
+  //隣が異色の場合、対ゴマ探しor候補地選出
+  const serch_turn_color = (a_position: number[], one_direction: number[], count: number) => {
+    if (
+      board[a_position[0] + one_direction[0]]?.[a_position[1] + one_direction[1]] ===
+        3 - turnColor &&
+      board[a_position[0] + one_direction[0] * count]?.[
+        a_position[1] + one_direction[1] * count
+      ] === turnColor
+    ) {
+      const yellow_position: number[] = [a_position[0], a_position[1]];
+      const taigoma_positions: number[] = [
+        a_position[0] + one_direction[0] * count,
+        a_position[1] + one_direction[1] * count,
+      ];
+      board[a_position[0]][a_position[1]] = 7;
+      return { yellow_position, taigoma_positions };
+    } else if (
+      board[a_position[0] + one_direction[0] * count]?.[
+        a_position[1] + one_direction[1] * count
+      ] ===
+      3 - turnColor
+    ) {
+      count++;
+      serch_turn_color(a_position, one_direction, count);
+    }
+  };
+
+  for (const n of get_zero_positions()) {
+    for (const i of directions) {
+      serch_turn_color(n, i, 2);
+    }
+  }
+
   const clickCell = (x: number, y: number) => {
     console.log('クリック', x, y);
-    const newBoard: number[][] = JSON.parse(JSON.stringify(board));
 
     // console.log('newBoard', newBoard);
-    const directions = [
-      [0, -1],
-      [1, -1],
-      [1, 0],
-      [1, 1],
-      [0, 1],
-      [-1, 1],
-      [-1, 0],
-      [-1, -1],
-    ];
 
     // console.log('turncolor', turnColor);
     // console.log('newturncolor', newTurnColor);
@@ -106,15 +164,26 @@ const Home = () => {
       return [valid_click_state, return_piece_list];
     }
 
-    //過去の黄色枠座標消去
-
-    for (let i = 0; i < newBoard.length; i++) {
-      for (let j = 0; j < newBoard[i].length; j++) {
-        if (newBoard[j][i] === 7) {
-          newBoard[j][i] = 0;
-        }
-      }
-    }
+    //8方向参照
+    const Possible_click_positions = (positions: number[][]) => {
+      let result: { yellow_position: number[]; taigoma_positions: number[] } | undefined =
+        undefined;
+      const yellow_positions: number[][] = [];
+      const taigoma_positions: number[][] = [];
+      positions.forEach((a_position) => {
+        directions.forEach((one_direction) => {
+          if (
+            board[a_position[0] + one_direction[0]]?.[a_position[1] + one_direction[1]] ===
+            3 - turnColor
+          ) {
+            result = serch_turn_color(a_position, one_direction, 2);
+            result && yellow_positions.push(result.yellow_position);
+            result && taigoma_positions.push(result.taigoma_positions);
+            return { yellow_positions, taigoma_positions };
+          }
+        });
+      });
+    };
 
     function specified_digit_count(search_digit: number): number[] {
       let count_digit = 0;
@@ -137,6 +206,7 @@ const Home = () => {
       board[click[1]][click[0]] === 7
     ) {
       newBoard[click[1]][click[0]] = turnColor;
+      setBoard(newBoard);
 
       for (const one_return_list of return_list) {
         newBoard[one_return_list[1]][one_return_list[0]] = turnColor;
@@ -175,44 +245,44 @@ const Home = () => {
     }
 
     //0座標から8方向参照、黄色枠位置割り出し処理
-    for (const one_zero_position of zero_positions) {
-      for (const course of directions) {
-        if (
-          //0座標の隣が ※異色 の場合処理を行う
+    // for (const one_zero_position of zero_positions) {
+    //   for (const course of directions) {
+    //     if (
+    //       //0座標の隣が ※異色 の場合処理を行う
 
-          newBoard[one_zero_position[1] + course[1]]?.[one_zero_position[0] + course[0]] ===
-          3 - newTurnColor
-        ) {
-          //2マス目以降対駒探し
-          for (let next_squares = 2; next_squares <= 7; next_squares++) {
-            const x_next_squares = course[0] * next_squares + one_zero_position[0];
-            const y_next_squares = course[1] * next_squares + one_zero_position[1];
+    //       newBoard[one_zero_position[1] + course[1]]?.[one_zero_position[0] + course[0]] ===
+    //       3 - newTurnColor
+    //     ) {
+    //       //2マス目以降対駒探し
+    //       for (let next_squares = 2; next_squares <= 7; next_squares++) {
+    //         const x_next_squares = course[0] * next_squares + one_zero_position[0];
+    //         const y_next_squares = course[1] * next_squares + one_zero_position[1];
 
-            if (
-              //対駒の前に0が来たらbreak
-              newBoard[y_next_squares] !== undefined &&
-              newBoard[x_next_squares] !== undefined &&
-              newBoard[y_next_squares][x_next_squares] === 0
-            ) {
-              break;
-            }
+    //         if (
+    //           //対駒の前に0が来たらbreak
+    //           newBoard[y_next_squares] !== undefined &&
+    //           newBoard[x_next_squares] !== undefined &&
+    //           newBoard[y_next_squares][x_next_squares] === 0
+    //         ) {
+    //           break;
+    //         }
 
-            if (
-              //対駒在りの場合、0座標を'7'に変更
-              newBoard[y_next_squares] !== undefined &&
-              newBoard[x_next_squares] !== undefined &&
-              newBoard[y_next_squares][x_next_squares] === newTurnColor
-            ) {
-              console.log('有効ゼロ座標', one_zero_position[0], one_zero_position[1]);
-              newBoard[one_zero_position[1]][one_zero_position[0]] = 7;
-              setBoard(newBoard);
+    //         if (
+    //           //対駒在りの場合、0座標を'7'に変更
+    //           newBoard[y_next_squares] !== undefined &&
+    //           newBoard[x_next_squares] !== undefined &&
+    //           newBoard[y_next_squares][x_next_squares] === newTurnColor
+    //         ) {
+    //           console.log('有効ゼロ座標', one_zero_position[0], one_zero_position[1]);
+    //           newBoard[one_zero_position[1]][one_zero_position[0]] = 7;
+    //           setBoard(newBoard);
 
-              break;
-            }
-          }
-        }
-      }
-    }
+    //           break;
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
 
     const [temporary_white_count] = specified_digit_count(2);
     const [temporary_black_count] = specified_digit_count(1);
